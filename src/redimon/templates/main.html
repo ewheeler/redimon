@@ -80,7 +80,11 @@
 					<span class="info" id="{{ k }}_info">
 					{{ k }}
 					</span>
-					<span class="up" id="{{ k }}_count">
+					{% if k is sameas "topup_fails" %}
+						<span class="down" id="{{ k }}_count">
+					{% else %}
+						<span class="up" id="{{ k }}_count">
+					{% endif %}
 					{{ v }}
 					</span>
 				</div>
