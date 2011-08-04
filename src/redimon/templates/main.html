@@ -73,6 +73,19 @@
                             {{stat.used_memory_human}}
                         </span>
                     </div>
+		    {% if stat.get('hotqueues') %}
+			<h2> HotQueues </h2>
+			{% for k,v in stat.get('hotqueues').items() %}
+				<div class="info_line">
+					<span class="info" id="{{ k }}_info">
+					{{ k }}
+					</span>
+					<span class="up" id="{{ k }}_count">
+					{{ v }}
+					</span>
+				</div>
+			{% endfor %}
+			{% endif %}
                     <h2> details </h2>
                     <div id="detail">
                         <div class="detail_line">uptime in days: <span class="line_span" id="{{ stat.addr }}_uptime_in_days">{{ stat.uptime_in_days }}</span></div>

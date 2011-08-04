@@ -2,6 +2,7 @@ from flask import Flask, render_template, jsonify
 
 from lib.stats import RedisMonitor
 from settings import SERVERS
+from settings import HOTQUEUES
 
 try:
     import json
@@ -10,7 +11,7 @@ except:
 
 import datetime
 
-redis_monitor = RedisMonitor(SERVERS)
+redis_monitor = RedisMonitor(SERVERS, HOTQUEUES)
 
 # initialize flask application
 app = Flask(__name__)

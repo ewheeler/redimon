@@ -1,17 +1,19 @@
 # -*- coding: utf-8 -*-
 
 import redis, datetime
+from hotqueue import key_for_name
 
 
 class RedisMonitor(object):
 
-    def __init__(self, servers):
+    def __init__(self, servers, hotqueues=None):
         self.servers = servers
+        self.hotqueues = hotqueues
 
     def getStats(self, jsonOutput = None):
         response = []
         for server in self.servers:
-            response.append(self.getStatsPerServer(server))
+            response.append(self.getStatsPerServer(server, self.hotqueues))
 
         if jsonOutput:
             new_response = []
@@ -24,7 +26,7 @@ class RedisMonitor(object):
 
         return response
 
-    def getStatsPerServer(self, server):
+    def getStatsPerServer(self, server, hotqueues):
 
         try:
             connection = redis.Redis(host=server[0], port=server[1], db=0)
@@ -36,6 +38,21 @@ class RedisMonitor(object):
             })
 
             connection.connection_pool.disconnect()
+            if hotqueues:
+                for hotqueue in hotqueues:
+                    if hotqueue[0] == server:
+                        store = redis.Redis(host=server[0], port=server[1], db=hotqueue[1])
+                        # code graciously cribbed from https://github.com/richardhenry/hotwatch
+                        def length_for_names(store, *queue_names):
+                            for queue_name in queue_names:
+                                yield queue_name, store.llen(key_for_name(queue_name))
+
+                        hotqueue_info = {}
+                        for item in length_for_names(store, *hotqueue[2]):
+                            name, length = item
+                            hotqueue_info.update({name: length})
+                        store.connection_pool.disconnect()
+                        info.update({'hotqueues': hotqueue_info})
 
         except redis.exceptions.ConnectionError:
             info =  {
